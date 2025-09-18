@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>URL Shortener</title>
+</head>
+<body>
+   <div class="container">
+     <h1>URL Shortener</h1>
+     <form id="shorten-form">
+        <div>
+            <label for="url">Enter URL:</label>
+            <input type="url" name="url" id="url" required>
+        </div>
+        <div>
+            <label for="shortCode">Enter shortCode (optional):</label>
+            <input type="text" name="shortCode" id="shortCode">
+        </div>
+        <button type="submit">Shorten</button>
+     </form>
+
+     <h2>Shortened URLs</h2>
+     <ul id="shortCode-urls"></ul>
+   </div>
+
+   <script>
+    const fetchShortenUrl = async () => {
+        try {
+            const response = await fetch("/links");
+            const links = await response.json();   // ✅ FIXED: changed .JSON() → .json()
+            console.log("links", links);
+
+            const list = document.getElementById("shortCode-urls");
+            list.innerHTML = ""; // ✅ FIXED: clear list before rendering new data
+
+            if (Object.keys(links).length === 0) {
+                list.innerHTML = "<li>No shortened URLs yet.</li>";
+                return;
+            }
+
+            for (const [shortCode, url] of Object.entries(links)) {  // ✅ FIXED: cosnt → const, object.entries → Object.entries
+                const li = document.createElement('li');
+                const turnCateUrl = url.length>=30 ? `${url.slice(0,30)}...` : url;
+                li.innerHTML = `<a href="/${shortCode}" target="_blank">${window.location.origin}/${shortCode}</a> - ${turnCateUrl}`; // ✅ FIXED: target="_blanks" → target="_blank"
+                list.appendChild(li);
+            }
+        } catch (err) {
+            console.error("Error fetching links:", err);
+        }
+    };
+
+    document.getElementById('shorten-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const url = formData.get('url');
+        const shortCode = formData.get('shortCode');
+
+        console.log("Submitting:", url, shortCode);
+
+        try {
+            const response = await fetch("/shorten", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },  // ✅ FIXED: "content-Type" → "Content-Type"
+                body: JSON.stringify({ url, shortCode })
+            });
+
+            if (response.ok) {
+                alert("Form submitted successfully");
+                fetchShortenUrl();
+                event.target.reset();
+            } else {
+                const errorMessage = await response.text();
+                alert(errorMessage);
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+        }
+    });
+
+    // ✅ Initial load to fetch URLs
+    fetchShortenUrl();
+   </script>
+</body>
+</html>
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Url Shortener</title>
+</head>
+<body>
+   <div class="container">
+     <h1>URL Shortener</h1>
+    <form   id="shorten-form">
+        <div>
+            <label for="url">Enter URL:</label>
+            <input type="url" name="url" id="url" required>
+        </div>
+         <div>
+            <label for="shortCode">Enter shortCode:</label>
+            <input type="text" name="shortCode" id="shortCode" required>
+        </div>
+        <button type="submit">Shorten</button>
+    </form>
+
+    <h2>shortCode URLs</h2>
+    <ul id="shortCode-urls"></ul>
+   </div>
+
+   <script>
+
+    const fetchShortenUrl = async () =>{
+        
+        const response = await fetch("/links");
+        const links = await response.json();
+        console.log("links",links)
+      const list = document.getElementById("shortCode-urls");
+      list.innerText=""
+       for(cosnt [shortCode , url] of Object.entries(links)){
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="/${shortCode}" target="_blank"> ${window.location.origin}/${shortCode}</a> - ${url}`
+        list.appendChild(li)
+       }
+
+    }
+        document.getElementById('shorten-form').addEventListener('submit', async (event)=>{
+           event.preventDefault();
+
+           const formData = new FormData(event.target);
+           const url =  formData.get('url');
+           const shortCode = formData.get('shortCode')
+           console.log(url,shortCode);
+
+           try{
+            const response = await fetch("/shorten" , {
+                method : "POST",
+                headers :{"Content-Type" : "application/json"},
+                body :  JSON.stringify({url,shortCode})
+            })
+            if(response.ok){
+                alert("form submitted successfully");
+                fetchShortenUrl()
+                event.target.reset();
+            }
+            else{
+                const errorMessage = await response.text();
+                alert(errorMessage);
+            }
+           }
+           catch(error){
+               console.log(error);
+           }
+           
+        })
+
+        fetchShortenUrl()
+   </script>
+</body>
+</html> -->
